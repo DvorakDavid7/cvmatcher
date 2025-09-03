@@ -38,3 +38,25 @@ export async function compareResumesWithJobDescription(jobDescription: string, r
 
   return response.output_text;
 }
+
+export async function generateLinkedInBooleanSearch(jobDescription: string): Promise<string> {
+  const prompt = `
+        You are an expert recruiter and LinkedIn search specialist. Based on the following job description, 
+        generate a precise LinkedIn boolean search query that will help find qualified candidates.
+
+        Instructions:
+        - Focus on the most important qualifications and requirements
+        - Keep the search practical and not overly complex
+        - Return only the boolean search string, nothing else
+
+        Job Description:
+        ${jobDescription}
+    `;
+
+  const response = await client.responses.create({
+    model: "gpt-5",
+    input: prompt,
+  });
+
+  return response.output_text.replace(/```/g, '').replace(/linkedin/gi, '').replace(/boolean search:/gi, '').trim();
+}
