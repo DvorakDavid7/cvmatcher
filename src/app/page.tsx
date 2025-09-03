@@ -50,34 +50,31 @@ export default function Home() {
     try {
       // Prepare form data
       const formData = new FormData();
-      formData.append('jobDescription', jobDescription);
-      
+      formData.append("jobDescription", jobDescription);
+
       // Add CV files
       cvFiles.forEach((file, index) => {
         formData.append(`cvFiles[${index}]`, file);
       });
 
       // Send to test upload endpoint
-      const response = await fetch('/api/test-upload', {
-        method: 'POST',
+      const response = await fetch("/api/test-upload", {
+        method: "POST",
         body: formData,
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Upload test failed');
+        throw new Error(errorData.error || "Upload test failed");
       }
 
       const data = await response.json();
-      console.log('Upload test response:', data);
+      console.log("Upload test response:", data);
 
       // Show success message and return to upload state
-      alert(`Files uploaded successfully!\n\nJob Description: ${data.jobDescription.name} (${data.jobDescription.size} bytes)\nCV Files: ${data.totalFiles - 1} files`);
       setAnalysisState("upload");
-
     } catch (error) {
       console.error("Upload test failed:", error);
-      alert(`Upload test failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
       setAnalysisState("upload");
     }
   };

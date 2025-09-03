@@ -1,19 +1,17 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { extractTextFromPDF } from "@/utils/pdfUtils";
+import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
 
     // Get job description file
-    const jobDescriptionFile = formData.get('jobDescription') as File;
+    const jobDescriptionFile = formData.get("jobDescription") as File;
     if (!jobDescriptionFile) {
-      return NextResponse.json(
-        { error: 'No job description file received' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "No job description file received" }, { status: 400 });
     }
 
-    console.log('=== UPLOADED FILES ===');
+    console.log("=== UPLOADED FILES ===");
     console.log(`Job Description: ${jobDescriptionFile.name} - Size: ${jobDescriptionFile.size} bytes`);
 
     // Get CV files
@@ -27,29 +25,31 @@ export async function POST(request: NextRequest) {
       fileIndex++;
     }
 
+    for (const file of cvFiles) {
+      const arrayBuffer = await file.arrayBuffer();
+      const text = await extractTextFromPDF(Buffer.from(arrayBuffer));
+      console.log(`Extracted text from ${file.name}: ${text.slice(0, 100)}...`);
+    }
+
     console.log(`Total CV files received: ${cvFiles.length}`);
-    console.log('=====================');
+    console.log("=====================");
 
     return NextResponse.json({
-      message: 'Files received successfully',
+      message: "Files received successfully",
       jobDescription: {
         name: jobDescriptionFile.name,
         size: jobDescriptionFile.size,
-        type: jobDescriptionFile.type
+        type: jobDescriptionFile.type,
       },
-      cvFiles: cvFiles.map(file => ({
+      cvFiles: cvFiles.map((file) => ({
         name: file.name,
         size: file.size,
-        type: file.type
+        type: file.type,
       })),
-      totalFiles: cvFiles.length + 1
+      totalFiles: cvFiles.length + 1,
     });
-
   } catch (error) {
-    console.error('Upload test error:', error);
-    return NextResponse.json(
-      { error: 'Failed to process upload' },
-      { status: 500 }
-    );
+    console.error("Upload test error:", error);
+    return NextResponse.json({ error: "Failed to process upload" }, { status: 500 });
   }
 }
