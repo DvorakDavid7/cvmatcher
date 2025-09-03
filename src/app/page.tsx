@@ -7,10 +7,9 @@ type AnalysisState = "upload" | "analyzing" | "results";
 
 interface CVResult {
   file: File;
+  fullName: string;
   score: number;
-  matchedKeywords: string[];
-  strengths: string[];
-  weaknesses: string[];
+  explanation: string;
 }
 
 export default function Home() {
@@ -68,10 +67,27 @@ export default function Home() {
         throw new Error(errorData.error || "Upload test failed");
       }
 
-      const data = await response.json();
-      console.log("Upload test response:", data);
+      const analysisResult = (await response.json()) as {
+        message: string;
+        result: { fullName: string; score: number; explanation: string }[];
+      };
+      console.log("OpenAI analysis response:", analysisResult);
+
+      // Convert to our CVResult format
+      const results: CVResult[] = analysisResult.result
+        .map((result, index) => ({
+          file: cvFiles[index] || new File([], `CV_${index + 1}`),
+          fullName: result.fullName || `Candidate ${index + 1}`,
+          score: result.score || 0,
+          explanation: result.explanation || "No explanation provided",
+        }))
+        .sort((a, b) => b.score - a.score); // Sort by score descending
+
+      setCvResults(results);
+      setAnalysisState("results");
     } catch (error) {
-      console.error("Upload test failed:", error);
+      console.error("Analysis failed:", error);
+      alert(`Analysis failed: ${error instanceof Error ? error.message : "Unknown error"}`);
       setAnalysisState("upload");
     }
   };
