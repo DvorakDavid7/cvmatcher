@@ -17,12 +17,39 @@ export default function Home() {
   const [cvFiles, setCvFiles] = useState<File[]>([]);
   const [analysisState, setAnalysisState] = useState<AnalysisState>("upload");
   const [cvResults, setCvResults] = useState<CVResult[]>([]);
+  const [linkedInSearch, setLinkedInSearch] = useState<string>("");
+  const [isGeneratingSearch, setIsGeneratingSearch] = useState(false);
   const jobFileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleJobDescriptionUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleJobDescriptionUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
       setJobDescription(file);
+      await generateLinkedInSearch(file);
+    }
+  };
+
+  const generateLinkedInSearch = async (file: File) => {
+    setIsGeneratingSearch(true);
+    try {
+      const formData = new FormData();
+      formData.append("jobDescription", file);
+
+      const response = await fetch("/api/linkedin-search", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setLinkedInSearch(data.search);
+      } else {
+        console.error("Failed to generate LinkedIn search");
+      }
+    } catch (error) {
+      console.error("Error generating LinkedIn search:", error);
+    } finally {
+      setIsGeneratingSearch(false);
     }
   };
 
@@ -32,6 +59,7 @@ export default function Home() {
 
   const removeJobDescription = () => {
     setJobDescription(null);
+    setLinkedInSearch("");
     if (jobFileInputRef.current) {
       jobFileInputRef.current.value = "";
     }
