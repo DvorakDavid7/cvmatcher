@@ -133,6 +133,66 @@ export default function Home() {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
   };
 
+  const formatLinkedInSearch = (searchQuery: string) => {
+    if (!searchQuery) return null;
+
+    // Split the query into tokens for highlighting
+    const tokens = searchQuery.split(/(\s+|[()"])/g);
+    
+    return (
+      <span className="break-all">
+        {tokens.map((token, index) => {
+          const trimmedToken = token.trim();
+          
+          // Boolean operators
+          if (['AND', 'OR', 'NOT'].includes(trimmedToken)) {
+            return (
+              <span key={index} className="text-purple-400 font-bold">
+                {token}
+              </span>
+            );
+          }
+          
+          // Parentheses for grouping
+          if (trimmedToken === '(' || trimmedToken === ')') {
+            return (
+              <span key={index} className="text-yellow-400 font-bold">
+                {token}
+              </span>
+            );
+          }
+          
+          // Quoted phrases (exact matches)
+          if (token.startsWith('"') && token.endsWith('"') && token.length > 1) {
+            return (
+              <span key={index} className="text-green-400">
+                {token}
+              </span>
+            );
+          }
+          
+          // Keywords and skills (heuristic detection)
+          if (trimmedToken.length > 2 && 
+              !['and', 'or', 'not', 'the', 'in', 'at', 'of', 'for', 'with'].includes(trimmedToken.toLowerCase()) &&
+              /^[a-zA-Z+#.-]+$/.test(trimmedToken)) {
+            return (
+              <span key={index} className="text-blue-300">
+                {token}
+              </span>
+            );
+          }
+          
+          // Default text (whitespace, punctuation, etc.)
+          return (
+            <span key={index} className="text-slate-300">
+              {token}
+            </span>
+          );
+        })}
+      </span>
+    );
+  };
+
   if (analysisState === "upload") {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-12 px-4">
@@ -222,10 +282,100 @@ export default function Home() {
               )}
             </div>
 
+            {/* LinkedIn Search Section */}
+            {(jobDescription || isGeneratingSearch) && (
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-8">
+                <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-6">
+                  LinkedIn Boolean Search
+                </h2>
+                
+                {isGeneratingSearch ? (
+                  <div className="flex items-center justify-center p-8">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-6 h-6 border-2 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
+                      <span className="text-gray-600 dark:text-gray-400">Generating LinkedIn search filter...</span>
+                    </div>
+                  </div>
+                ) : linkedInSearch ? (
+                  <div className="space-y-4">
+                    <p className="text-gray-600 dark:text-gray-400 text-sm">
+                      Use this boolean search query to find qualified candidates on LinkedIn:
+                    </p>
+                    <div className="relative">
+                      <div className="bg-slate-900 dark:bg-slate-800 rounded-lg p-4 border border-slate-700 overflow-x-auto">
+                        <div className="text-sm font-mono leading-relaxed">
+                          {formatLinkedInSearch(linkedInSearch)}
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => navigator.clipboard.writeText(linkedInSearch)}
+                        className="absolute top-2 right-2 p-2 text-slate-400 hover:text-slate-200 transition-colors duration-200 bg-slate-800/50 hover:bg-slate-700/50 rounded-md"
+                        title="Copy to clipboard"
+                      >
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
+                          />
+                        </svg>
+                      </button>
+                    </div>
+                    
+                    {/* Color Legend */}
+                    <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4 border border-gray-200 dark:border-gray-600">
+                      <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Search Query Legend:</h4>
+                      <div className="grid grid-cols-2 gap-3 text-xs">
+                        <div className="flex items-center space-x-2">
+                          <span className="text-purple-400 font-bold font-mono">AND OR NOT</span>
+                          <span className="text-gray-600 dark:text-gray-400">Boolean operators</span>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <span className="text-yellow-400 font-bold font-mono">( )</span>
+                          <span className="text-gray-600 dark:text-gray-400">Grouping</span>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <span className="text-green-400 font-mono">&quot;exact phrase&quot;</span>
+                          <span className="text-gray-600 dark:text-gray-400">Exact matches</span>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <span className="text-blue-300 font-mono">keywords</span>
+                          <span className="text-gray-600 dark:text-gray-400">Skills & terms</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                        Copy this search query and paste it into LinkedIn&apos;s search bar for best results.
+                      </p>
+                      <a
+                        href={`https://www.linkedin.com/search/results/people/?keywords=${encodeURIComponent(linkedInSearch)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center px-3 py-2 text-xs font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/20 dark:hover:bg-blue-950/30 rounded-lg transition-colors duration-200"
+                      >
+                        <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                          <path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z"/>
+                          <path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-1a1 1 0 10-2 0v1H5V7h1a1 1 0 000-2H5z"/>
+                        </svg>
+                        Search on LinkedIn
+                      </a>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center p-8 text-gray-500 dark:text-gray-400">
+                    LinkedIn search will be generated automatically when you upload a job description.
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* CV Upload Section */}
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-8">
               <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-6">
-                Step 2: Upload CVs to Compare
+                Step 3: Upload CVs to Compare
               </h2>
               <DragAndDrop
                 acceptedTypes={["application/pdf", ".doc", ".docx"]}
