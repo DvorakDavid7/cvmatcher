@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       message: "Files received successfully",
-      result,
+      result: JSON.parse(result),
     });
   } catch (error) {
     console.error("Upload test error:", error);

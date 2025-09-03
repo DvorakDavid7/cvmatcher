@@ -9,7 +9,7 @@ export async function testOpenAi() {
   console.log("OpenAI response:", response.output_text);
 }
 
-export async function compareResumesWithJobDescription(jobDescription: string, resumes: string[]): Promise<any> {
+export async function compareResumesWithJobDescription(jobDescription: string, resumes: string[]): Promise<string> {
   const prompt = `
         You are an expert It HR consultant. Compare the following resumes with the job description
         and provide a score from 1 to 100 for each resume based on how well it matches the job description.
