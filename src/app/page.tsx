@@ -336,16 +336,13 @@ export default function Home() {
                             Rank
                           </th>
                           <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                            CV
+                            Candidate
                           </th>
                           <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                             Match Score
                           </th>
                           <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                            Key Matches
-                          </th>
-                          <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                            Action
+                            Analysis
                           </th>
                         </tr>
                       </thead>
@@ -389,10 +386,10 @@ export default function Home() {
                                 </div>
                                 <div>
                                   <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                                    {result.file.name}
+                                    {result.fullName}
                                   </div>
                                   <div className="text-sm text-gray-500 dark:text-gray-400">
-                                    {formatFileSize(result.file.size)}
+                                    {result.file.name} • {formatFileSize(result.file.size)}
                                   </div>
                                 </div>
                               </div>
@@ -419,26 +416,11 @@ export default function Home() {
                               </div>
                             </td>
                             <td className="px-6 py-4">
-                              <div className="flex flex-wrap gap-1">
-                                {result.matchedKeywords.slice(0, 3).map((keyword, keyIndex) => (
-                                  <span
-                                    key={keyIndex}
-                                    className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300"
-                                  >
-                                    {keyword}
-                                  </span>
-                                ))}
-                                {result.matchedKeywords.length > 3 && (
-                                  <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300">
-                                    +{result.matchedKeywords.length - 3}
-                                  </span>
-                                )}
+                              <div className="max-w-md">
+                                <p className="text-sm text-gray-900 dark:text-gray-100 line-clamp-3">
+                                  {result.explanation}
+                                </p>
                               </div>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                              <button className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 font-medium">
-                                View Details
-                              </button>
                             </td>
                           </tr>
                         ))}
