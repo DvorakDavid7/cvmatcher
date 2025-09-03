@@ -70,9 +70,6 @@ export default function Home() {
 
       const data = await response.json();
       console.log("Upload test response:", data);
-
-      // Show success message and return to upload state
-      setAnalysisState("upload");
     } catch (error) {
       console.error("Upload test failed:", error);
       setAnalysisState("upload");
